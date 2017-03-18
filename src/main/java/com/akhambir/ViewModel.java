@@ -3,6 +3,8 @@ package com.akhambir;
 public class ViewModel {
     private String view;
 
+    public ViewModel() {}
+
     public ViewModel(String view) {
         this.view = view;
     }

@@ -10,6 +10,10 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.akhambir.Factory.getConnection;
+import static com.akhambir.Factory.getUserDaoImpl;
+import static com.akhambir.Factory.getUserServiceImpl;
+
 public class MainServlet extends HttpServlet {
 
     private final Map<Request, Controller> controllerMap = new HashMap<>();
@@ -17,6 +21,10 @@ public class MainServlet extends HttpServlet {
     public void init() {
         controllerMap.put(new Request("GET", "/"), Factory.getHomeController());
         controllerMap.put(new Request("GET", "/login"), Factory.getLoginController());
+        controllerMap.put(new Request("POST", "/register"), Factory.getRegistrationController(
+                                                                    getUserServiceImpl(
+                                                                    getUserDaoImpl(
+                                                                    getConnection()))));
     }
 
     public void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -32,11 +40,13 @@ public class MainServlet extends HttpServlet {
         Controller controller = controllerMap.get(request);
 
         try {
-            servletRequest.getRequestDispatcher(getView(controller.process(servletRequest, servletResponse)))
-                    .forward(servletRequest, servletResponse);
-        } catch (ServletException e) {
-            e.printStackTrace();
-        } catch (IOException e) {
+            if (controller != null) {
+                servletRequest.getRequestDispatcher(getView(controller.process(servletRequest, servletResponse)))
+                        .forward(servletRequest, servletResponse);
+            } else  {
+                servletRequest.getRequestDispatcher("/WEB-INF/error.jsp").forward(servletRequest, servletResponse);
+            }
+        } catch (ServletException | IOException e) {
             e.printStackTrace();
         }
     }
